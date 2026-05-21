@@ -4,32 +4,40 @@ import math
 
 # ─────────────────────────────────────────── typy elementów świata
 
-ELEMENT_CRATER       = "KRATER"
-ELEMENT_ICE          = "ZŁOŻE_LODU"
-ELEMENT_RADIATION    = "STREFA_RADIACJI"
-ELEMENT_BASE_CAMP    = "BAZA_WYPADOWA"
-ELEMENT_ROCK_FIELD   = "POLE_SKAŁ"
+ELEMENT_STALAGMITE      = "STALAGMITE"
+ELEMENT_STALACTITE      = "STALACTITE"
+ELEMENT_STALAGNATE      = "STALAGNATE"
+ELEMENT_MOSQUITO_SWARM  = "MOSQUITO_SWARM"
+ELEMENT_STRONG_DRAFT    = "STRONG_DRAFT"
+ELEMENT_SAFE_CREVICE    = "SAFE_CREVICE"
 
 
 ELEMENT_SYMBOLS = {
-    ELEMENT_CRATER:     "💥",
-    ELEMENT_ICE:        "🧊",
-    ELEMENT_RADIATION:  "☢️ ",
-    ELEMENT_BASE_CAMP:  "🏕️ ",
-    ELEMENT_ROCK_FIELD: "🪨",
+    ELEMENT_STALAGMITE:     "💥",
+    ELEMENT_STALACTITE:     "💥",
+    ELEMENT_STALAGNATE:     "🪨",
+    ELEMENT_MOSQUITO_SWARM: "🦟",
+    ELEMENT_STRONG_DRAFT:   "💨",
+    ELEMENT_SAFE_CREVICE:   "🦇",
 }
 
 ELEMENT_DESCRIPTIONS = {
-    ELEMENT_CRATER:
-        "Krater uderzeniowy – gwałtowne hamowanie i uszkodzenie.",
-    ELEMENT_ICE:
-        "Złoże lodu – można odparować wodę i uzupełnić ogniwa paliwowe.",
-    ELEMENT_RADIATION:
-        "Strefa radiacji – osłania panele słoneczne, drenaż energii.",
-    ELEMENT_BASE_CAMP:
-        "Baza wypadowa – można tu uzupełnić zapasy.",
-    ELEMENT_ROCK_FIELD:
-        "Pole skał – trudny teren blokujący ruch.",
+    "pl": {
+        ELEMENT_STALAGMITE:     "Stalagmit – przeszkoda wyrastająca z dna jaskini.",
+        ELEMENT_STALACTITE:     "Stalaktyt – przeszkoda zwisająca ze stropu.",
+        ELEMENT_STALAGNATE:     "Stalagnat – potężna kolumna łącząca dno ze stropem.",
+        ELEMENT_MOSQUITO_SWARM: "Chmara komarów – pożywne śniadanie dla nietoperza.",
+        ELEMENT_STRONG_DRAFT:   "Silny przeciąg – wiatr utrudniający lot.",
+        ELEMENT_SAFE_CREVICE:   "Bezpieczna szczelina – idealne miejsce na odpoczynek.",
+    },
+    "en": {
+        ELEMENT_STALAGMITE:     "Stalagmite – an obstacle rising from the cave floor.",
+        ELEMENT_STALACTITE:     "Stalactite – an obstacle hanging from the ceiling.",
+        ELEMENT_STALAGNATE:     "Stalagnate – a massive column connecting floor and ceiling.",
+        ELEMENT_MOSQUITO_SWARM: "Mosquito swarm – a nutritious breakfast for the bat.",
+        ELEMENT_STRONG_DRAFT:   "Strong draft – wind making flight difficult.",
+        ELEMENT_SAFE_CREVICE:   "Safe crevice – a perfect place for rest.",
+    }
 }
 
 
@@ -51,8 +59,8 @@ class WorldElement:
     def symbol(self) -> str:
         return ELEMENT_SYMBOLS.get(self.element_type, "?")
 
-    def description(self) -> str:
-        return ELEMENT_DESCRIPTIONS.get(self.element_type, "Nieznany element.")
+    def description(self, lang="pl") -> str:
+        return ELEMENT_DESCRIPTIONS.get(lang, ELEMENT_DESCRIPTIONS["pl"]).get(self.element_type, "Unknown element.")
 
     def __repr__(self) -> str:
         return f"{self.element_type}@({self.x:.0f},{self.y:.0f})"
@@ -60,9 +68,9 @@ class WorldElement:
 
 class World:
     """
-    Dwuwymiarowy świat marsjański.
+    Dwuwymiarowy świat jaskini.
     Granice: x ∈ [-limit, +limit], y ∈ [-limit, +limit].
-    Zawiera losowo rozmieszczone elementy terenu oraz zdefiniowany cel wyprawy.
+    Zawiera losowo rozmieszczone elementy terenu oraz zdefiniowane wyjście z jaskini.
     """
 
     def __init__(self, limit: float, target_x: float, target_y: float,
@@ -82,13 +90,14 @@ class World:
         lo = -self.limit + margin
         hi =  self.limit - margin
 
-        # Zapewniamy przynajmniej 2 elementy każdego z 5 typów
+        # Zapewniamy przynajmniej kilka elementów każdego typu
         types_pool = (
-            [ELEMENT_CRATER]     * 3 +
-            [ELEMENT_ICE]        * 3 +
-            [ELEMENT_RADIATION]  * 2 +
-            [ELEMENT_BASE_CAMP]  * 2 +
-            [ELEMENT_ROCK_FIELD] * 3
+            [ELEMENT_STALAGMITE]     * 2 +
+            [ELEMENT_STALACTITE]     * 2 +
+            [ELEMENT_STALAGNATE]     * 3 +
+            [ELEMENT_MOSQUITO_SWARM] * 3 +
+            [ELEMENT_STRONG_DRAFT]   * 2 +
+            [ELEMENT_SAFE_CREVICE]   * 3
         )
         self._rng.shuffle(types_pool)
 
@@ -106,7 +115,7 @@ class World:
                 continue
 
             etype = types_pool[placed % len(types_pool)]
-            radius = 10.0 if etype == ELEMENT_RADIATION else 8.0
+            radius = 10.0 if etype == ELEMENT_STRONG_DRAFT else 8.0
             self.elements.append(WorldElement(etype, ex, ey, radius))
             placed += 1
 
@@ -139,10 +148,18 @@ class World:
 
     # ----------------------------------------------------------------- repr
 
-    def info(self) -> str:
-        return (
-            f"Granice świata: X ∈ [{-self.limit}, {self.limit}], "
-            f"Y ∈ [{-self.limit}, {self.limit}]\n"
-            f"Cel wyprawy: ({self.target_x}, {self.target_y})\n"
-            f"Liczba elementów terenu: {len(self.elements)}"
-        )
+    def info(self, lang="pl") -> str:
+        if lang == "pl":
+            return (
+                f"Granice jaskini: X ∈ [{-self.limit}, {self.limit}], "
+                f"Y ∈ [{-self.limit}, {self.limit}]\n"
+                f"Wyjście z jaskini: ({self.target_x}, {self.target_y})\n"
+                f"Liczba elementów jaskini: {len(self.elements)}"
+            )
+        else:
+            return (
+                f"Cave boundaries: X ∈ [{-self.limit}, {self.limit}], "
+                f"Y ∈ [{-self.limit}, {self.limit}]\n"
+                f"Cave exit: ({self.target_x}, {self.target_y})\n"
+                f"Number of cave elements: {len(self.elements)}"
+            )

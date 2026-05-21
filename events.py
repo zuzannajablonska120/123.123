@@ -1,23 +1,24 @@
 import random
 import math
+from i18n import get_text
 
 
 # ─────────────────────────────────────── definicje zdarzeń losowych
 
-EVENT_DUST_STORM        = "BURZA_PIASKOWA"
-EVENT_SOLAR_BOOST       = "WZMOCNIENIE_SŁONECZNE"
-EVENT_EQUIPMENT_FAILURE = "AWARIA_SPRZĘTU"
-EVENT_GROUND_QUAKE      = "TRZĘSIENIE_GRUNTU"
-EVENT_METEOR_SHOWER     = "DESZCZ_METEORYTÓW"
+EVENT_WIND_GUST       = "WIND_GUST"
+EVENT_FALLING_ROCKS   = "FALLING_ROCKS"
+EVENT_INSECT_SWARM    = "INSECT_SWARM"
+EVENT_CAVE_QUAKE      = "CAVE_QUAKE"
+EVENT_OTHER_BAT       = "OTHER_BAT"
 
 
 EVENT_WEIGHTS = {
-    EVENT_DUST_STORM:        20,
-    EVENT_SOLAR_BOOST:       15,
-    EVENT_EQUIPMENT_FAILURE: 18,
-    EVENT_GROUND_QUAKE:      12,
-    EVENT_METEOR_SHOWER:     10,
-    None:                    25,   # brak zdarzenia
+    EVENT_WIND_GUST:      20,
+    EVENT_FALLING_ROCKS:  15,
+    EVENT_INSECT_SWARM:   18,
+    EVENT_CAVE_QUAKE:     12,
+    EVENT_OTHER_BAT:      10,
+    None:                 25,   # brak zdarzenia
 }
 
 
@@ -29,88 +30,120 @@ class RandomEvent:
 
     # -------------------------------------------- zastosowanie zdarzenia
 
-    def apply(self, rover, world) -> list[str]:
+    def apply(self, bat, world, lang="pl") -> list[str]:
         """
-        Modyfikuje stan łazika i/lub świata.
+        Modyfikuje stan nietoperza i/lub jaskini.
         Zwraca listę komunikatów do wyświetlenia w terminalu.
         """
         if self.event_type is None:
             return []
 
         msgs: list[str] = []
-        msgs.append(f"  ⚡ ZDARZENIE LOSOWE: {self._label()}")
+        msgs.append(f"  ⚡ {get_text('random_event', lang)}: {self._label(lang)}")
 
-        if self.event_type == EVENT_DUST_STORM:
+        if self.event_type == EVENT_WIND_GUST:
             shift = random.randint(-60, 60)
-            old_angle = rover.angle
-            rover.turn(shift)
-            fuel_lost = rover.consume_fuel(12)
-            msgs.append(
-                f"     Silna burza piaskowa! Kąt zmieniony o {shift:+d}° "
-                f"({old_angle:.0f}° → {rover.angle:.0f}°). "
-                f"Paliwo: -{fuel_lost:.1f}"
-            )
-            rover.events_log.append(f"Krok {rover.steps}: Burza piaskowa (kąt {shift:+d}°, paliwo -{fuel_lost:.1f})")
+            old_angle = bat.angle
+            bat.turn(shift)
+            echo_lost = bat.consume_echolocation(12)
+            if lang == "pl":
+                msgs.append(
+                    f"     Silny podmuch wiatru! Kąt zmieniony o {shift:+d}° "
+                    f"({old_angle:.0f}° → {bat.angle:.0f}°). "
+                    f"Echolokacja: -{echo_lost:.1f}"
+                )
+            else:
+                msgs.append(
+                    f"     Strong wind gust! Angle changed by {shift:+d}° "
+                    f"({old_angle:.0f}° → {bat.angle:.0f}°). "
+                    f"Echolocation: -{echo_lost:.1f}"
+                )
+            bat.events_log.append(f"Step {bat.steps}: Wind gust (angle {shift:+d}°, echo -{echo_lost:.1f})")
 
-        elif self.event_type == EVENT_SOLAR_BOOST:
-            gained = rover.refuel(18)
-            msgs.append(
-                f"     Wyjątkowo dobre nasłonecznienie – panele ładują szybciej! "
-                f"Paliwo: +{gained:.1f}"
-            )
-            rover.events_log.append(f"Krok {rover.steps}: Wzmocnienie słoneczne (+{gained:.1f} paliwa)")
+        elif self.event_type == EVENT_INSECT_SWARM:
+            gained = bat.restore_echolocation(18)
+            if lang == "pl":
+                msgs.append(
+                    f"     Trafiłeś na rój owadów – pożywne śniadanie! "
+                    f"Echolokacja: +{gained:.1f}"
+                )
+            else:
+                msgs.append(
+                    f"     You found a swarm of insects – a nutritious breakfast! "
+                    f"Echolocation: +{gained:.1f}"
+                )
+            bat.events_log.append(f"Step {bat.steps}: Insect swarm (+{gained:.1f} echo)")
 
-        elif self.event_type == EVENT_EQUIPMENT_FAILURE:
-            fuel_lost = rover.consume_fuel(25)
-            msgs.append(
-                f"     Awaria układu termalnego – zużycie energii wzrosło! "
-                f"Paliwo: -{fuel_lost:.1f}"
-            )
-            rover.events_log.append(f"Krok {rover.steps}: Awaria sprzętu (paliwo -{fuel_lost:.1f})")
+        elif self.event_type == EVENT_FALLING_ROCKS:
+            echo_lost = bat.consume_echolocation(25)
+            if lang == "pl":
+                msgs.append(
+                    f"     Spadające kamienie – konieczne gwałtowne manewry! "
+                    f"Echolokacja: -{echo_lost:.1f}"
+                )
+            else:
+                msgs.append(
+                    f"     Falling rocks – emergency maneuvers required! "
+                    f"Echolocation: -{echo_lost:.1f}"
+                )
+            bat.events_log.append(f"Step {bat.steps}: Falling rocks (echo -{echo_lost:.1f})")
 
-        elif self.event_type == EVENT_GROUND_QUAKE:
+        elif self.event_type == EVENT_CAVE_QUAKE:
             dx = random.uniform(-8, 8)
             dy = random.uniform(-8, 8)
-            nx = rover.x + dx
-            ny = rover.y + dy
+            nx = bat.x + dx
+            ny = bat.y + dy
             nx, ny = world.clamp_to_bounds(nx, ny)
-            rover.apply_position(nx, ny)
-            fuel_lost = rover.consume_fuel(8)
-            msgs.append(
-                f"     Trzęsienie marsjańskiego gruntu! Przesunięcie: "
-                f"({dx:+.1f}, {dy:+.1f}). Nowa poz.: ({rover.x}, {rover.y}). "
-                f"Paliwo: -{fuel_lost:.1f}"
-            )
-            rover.events_log.append(
-                f"Krok {rover.steps}: Trzęsienie gruntu (przesuniecie ({dx:+.1f},{dy:+.1f}), "
-                f"paliwo -{fuel_lost:.1f})"
+            bat.apply_position(nx, ny)
+            echo_lost = bat.consume_echolocation(8)
+            if lang == "pl":
+                msgs.append(
+                    f"     Drżenie jaskini! Przesunięcie: "
+                    f"({dx:+.1f}, {dy:+.1f}). Nowa poz.: ({bat.x}, {bat.y}). "
+                    f"Echolokacja: -{echo_lost:.1f}"
+                )
+            else:
+                msgs.append(
+                    f"     Cave quake! Shift: "
+                    f"({dx:+.1f}, {dy:+.1f}). New pos.: ({bat.x}, {bat.y}). "
+                    f"Echolocation: -{echo_lost:.1f}"
+                )
+            bat.events_log.append(
+                f"Step {bat.steps}: Cave quake (shift ({dx:+.1f},{dy:+.1f}), "
+                f"echo -{echo_lost:.1f})"
             )
 
-        elif self.event_type == EVENT_METEOR_SHOWER:
-            fuel_lost = rover.consume_fuel(15)
+        elif self.event_type == EVENT_OTHER_BAT:
+            echo_lost = bat.consume_echolocation(15)
             shift = random.choice([-30, 30, -45, 45])
-            rover.turn(shift)
-            msgs.append(
-                f"     Deszcz meteorytów – konieczny gwałtowny manewr omijający! "
-                f"Kąt: {shift:+d}°. Paliwo: -{fuel_lost:.1f}"
-            )
-            rover.events_log.append(
-                f"Krok {rover.steps}: Deszcz meteorytów (kąt {shift:+d}°, paliwo -{fuel_lost:.1f})"
+            bat.turn(shift)
+            if lang == "pl":
+                msgs.append(
+                    f"     Spotkanie z innym nietoperzem – zakłócenia echolokacji i unik! "
+                    f"Kąt: {shift:+d}°. Echolokacja: -{echo_lost:.1f}"
+                )
+            else:
+                msgs.append(
+                    f"     Encounter with another bat – echolocation interference and dodge! "
+                    f"Angle: {shift:+d}°. Echolocation: -{echo_lost:.1f}"
+                )
+            bat.events_log.append(
+                f"Step {bat.steps}: Other bat encounter (angle {shift:+d}°, echo -{echo_lost:.1f})"
             )
 
         return msgs
 
     # ----------------------------------------------------------------- repr
 
-    def _label(self) -> str:
+    def _label(self, lang="pl") -> str:
         labels = {
-            EVENT_DUST_STORM:        "Burza Piaskowa 🌪️",
-            EVENT_SOLAR_BOOST:       "Wzmocnienie Słoneczne ☀️",
-            EVENT_EQUIPMENT_FAILURE: "Awaria Sprzętu 🔧",
-            EVENT_GROUND_QUAKE:      "Trzęsienie Gruntu 🌍",
-            EVENT_METEOR_SHOWER:     "Deszcz Meteorytów ☄️",
+            EVENT_WIND_GUST:      get_text("wind_gust", lang) + " 💨",
+            EVENT_INSECT_SWARM:   get_text("insect_swarm", lang) + " 🦟",
+            EVENT_FALLING_ROCKS:  get_text("falling_rocks", lang) + " 🪨",
+            EVENT_CAVE_QUAKE:     get_text("cave_quake", lang) + " 🌍",
+            EVENT_OTHER_BAT:      get_text("other_bat", lang) + " 🦇",
         }
-        return labels.get(self.event_type, "Nieznane zdarzenie")
+        return labels.get(self.event_type, "Unknown event")
 
     def __bool__(self) -> bool:
         return self.event_type is not None
