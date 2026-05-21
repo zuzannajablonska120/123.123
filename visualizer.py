@@ -1,149 +1,134 @@
 import turtle
+from i18n import get_text
 
+# Global variables for persistent turtle window
+_screen = None
+_pen = None
 
-def draw_expedition(rover, world) -> None:
-    """
-    Rysuje w oknie Turtle:
-      - granice świata,
-      - osie współrzędnych,
-      - punkt startowy i końcowy,
-      - trasę łazika,
-      - elementy terenu (jako kolorowe kropki),
-      - cel wyprawy.
-    """
-
-    # ── konfiguracja okna ──────────────────────────────────────────────────
+def init_visualizer(bat, world, lang="pl"):
+    global _screen, _pen
     try:
-        turtle.resetscreen()
-    except turtle.Terminator:
-        # Re-initialize turtle if window was closed
-        pass
+        _screen = turtle.Screen()
+        _screen.title(get_text("title", lang))
+        _screen.bgcolor("#0a0a0a")  # Deep cave black
+        _screen.tracer(0)
 
-    screen = turtle.Screen()
-    screen.title(f"Symulator Marsjański – trasa: {rover.name}")
-    screen.bgcolor("#1a0a00")          # ciemnobrązowe tło (Mars)
-    screen.tracer(0)                   # Wyłączamy animację dla szybkiego rysowania
+        _pen = turtle.Turtle()
+        _pen.hideturtle()
+        _pen.speed(0)
+
+        draw_update(bat, world, lang)
+    except Exception as e:
+        print(f"\n  [Visualizer] Warning: Could not initialize graphics: {e}")
+        _screen = None
+        _pen = None
+
+def draw_update(bat, world, lang="pl"):
+    global _screen, _pen
+    if _pen is None or _screen is None:
+        return
+
+    _pen.clear()
+    _pen.penup()
 
     L = world.limit
-    SCALE = min(350 / L, 3.5) if L > 0 else 1.0         # przelicznik jednostek świata → piksele
+    # Scaling to fit the screen
+    SCALE = min(350 / L, 3.5) if L > 0 else 1.0
 
     def wp(x, y):
-        """Przelicza współrzędne świata na piksele ekranu."""
         return x * SCALE, y * SCALE
 
-    pen = turtle.Turtle()
-    pen.hideturtle()
-    pen.speed(0)
-    pen.penup()
-
-    # ── granice świata ─────────────────────────────────────────────────────
-    pen.color("#cc5500")
-    pen.penup()
+    # ── Cave boundaries ─────────────────────────────────────────────────────
+    _pen.color("#333333") # Dark grey walls
+    _pen.penup()
     sx, sy = wp(-L, -L)
-    pen.goto(sx, sy)
-    pen.pendown()
+    _pen.goto(sx, sy)
+    _pen.pendown()
     for corner in [(-L, L), (L, L), (L, -L), (-L, -L)]:
-        pen.goto(*wp(*corner))
-    pen.penup()
+        _pen.goto(*wp(*corner))
+    _pen.penup()
 
-    # ── osie ──────────────────────────────────────────────────────────────
-    pen.color("#553300")
-    pen.goto(*wp(-L, 0)); pen.pendown(); pen.goto(*wp(L, 0));  pen.penup()
-    pen.goto(*wp(0, -L)); pen.pendown(); pen.goto(*wp(0, L));  pen.penup()
-
-    # Etykiety osi
-    pen.color("#aa6633")
-    pen.goto(*wp(L + 5, 0)); pen.write("X", font=("Arial", 9, "normal"))
-    pen.goto(*wp(0, L + 5)); pen.write("Y", font=("Arial", 9, "normal"))
-    pen.goto(*wp(-L - 5, 0)); pen.write(f"{-int(L)}", font=("Arial", 7, "normal"))
-    pen.goto(*wp(L,      0)); pen.write(f"+{int(L)}", font=("Arial", 7, "normal"))
-
-    # ── elementy terenu ────────────────────────────────────────────────────
+    # ── Elements ────────────────────────────────────────────────────────────
     colors_map = {
-        "KRATER":        ("#444444", 6),
-        "ZŁOŻE_LODU":    ("#88ddff", 6),
-        "STREFA_RADIACJI": ("#aaff00", 8),
-        "BAZA_WYPADOWA": ("#ffaa00", 7),
-        "POLE_SKAŁ":     ("#886644", 5),
+        "STALAGMITE":      ("#666666", 6),
+        "STALACTITE":      ("#888888", 6),
+        "STALAGNATE":      ("#444444", 10),
+        "MOSQUITO_SWARM":  ("#ff3333", 4),
+        "STRONG_DRAFT":    ("#5555ff", 8),
+        "SAFE_CREVICE":    ("#00ff00", 7),
     }
     for el in world.elements:
         col, sz = colors_map.get(el.element_type, ("#ffffff", 5))
-        pen.goto(*wp(el.x, el.y))
-        pen.dot(sz, col)
+        _pen.goto(*wp(el.x, el.y))
+        _pen.dot(sz, col)
 
-    # ── cel wyprawy ────────────────────────────────────────────────────────
-    pen.color("#ffff00")
+    # ── Exit ────────────────────────────────────────────────────────────────
+    _pen.color("#ffff00")
     gx, gy = wp(world.target_x, world.target_y)
-    pen.goto(gx, gy)
-    pen.dot(14, "#ffff00")
-    pen.goto(gx + 6, gy + 6)
-    pen.write("CEL", font=("Arial", 9, "bold"))
+    _pen.goto(gx, gy)
+    _pen.dot(14, "#ffff00")
+    _pen.goto(gx + 6, gy + 6)
+    _pen.write(get_text("goal", lang), font=("Arial", 9, "bold"))
 
-    # ── trasa łazika ──────────────────────────────────────────────────────
-    if rover.path:
-        pen.color("#ff6600")
-        pen.penup()
-        pen.goto(*wp(*rover.path[0]))
-        pen.pendown()
-        pen.pensize(2)
-        for px, py in rover.path[1:]:
-            pen.goto(*wp(px, py))
-        pen.penup()
+    # ── Bat path ──────────────────────────────────────────────────────────
+    if bat.path:
+        _pen.color("#aaaaaa")
+        _pen.penup()
+        _pen.goto(*wp(*bat.path[0]))
+        _pen.pendown()
+        _pen.pensize(1)
+        for px, py in bat.path[1:]:
+            _pen.goto(*wp(px, py))
+        _pen.penup()
 
-    # ── punkt startowy ────────────────────────────────────────────────────
-    sx0, sy0 = wp(*rover.path[0])
-    pen.goto(sx0, sy0)
-    pen.dot(12, "#00ff00")
-    pen.goto(sx0 + 5, sy0 + 5)
-    pen.color("#00ff00")
-    pen.write("START", font=("Arial", 8, "bold"))
+    # ── Start point ───────────────────────────────────────────────────────
+    sx0, sy0 = wp(*bat.path[0])
+    _pen.goto(sx0, sy0)
+    _pen.dot(10, "#0000ff")
+    _pen.color("#0000ff")
+    _pen.write(get_text("start", lang), font=("Arial", 8, "bold"))
 
-    # ── punkt końcowy ─────────────────────────────────────────────────────
-    ex, ey = wp(*rover.path[-1])
-    pen.goto(ex, ey)
-    pen.dot(12, "#ff0000")
-    pen.goto(ex + 5, ey + 5)
-    pen.color("#ff0000")
-    pen.write("KONIEC", font=("Arial", 8, "bold"))
+    # ── Current position (Bat) ────────────────────────────────────────────
+    ex, ey = wp(bat.x, bat.y)
+    _pen.goto(ex, ey)
+    # Draw a simple bat-like shape or just a dot
+    _pen.dot(12, "#ffffff")
+    _pen.color("#ffffff")
+    _pen.write(bat.name, font=("Arial", 8, "italic"))
 
-    # ── legenda ───────────────────────────────────────────────────────────
+    # ── Legend ───────────────────────────────────────────────────────────
     legend_items = [
-        ("#444444", "Krater"),
-        ("#88ddff", "Złoże lodu"),
-        ("#aaff00", "Strefa radiacji"),
-        ("#ffaa00", "Baza wypadowa"),
-        ("#886644", "Pole skał"),
-        ("#ffff00", "Cel wyprawy"),
-        ("#00ff00", "Start"),
-        ("#ff0000", "Koniec"),
+        ("#666666", get_text("stalagmite", lang)),
+        ("#888888", get_text("stalactite", lang)),
+        ("#444444", get_text("stalagnate", lang)),
+        ("#ff3333", get_text("mosquito_swarm", lang)),
+        ("#5555ff", get_text("strong_draft", lang)),
+        ("#00ff00", get_text("safe_crevice", lang)),
+        ("#ffff00", get_text("goal", lang)),
+        ("#ffffff", bat.name),
     ]
-    lx_start = -L * SCALE - 10
-    ly_start =  L * SCALE + 30
-    pen.color("#ffffff")
-    pen.goto(lx_start, ly_start)
-    pen.write("LEGENDA:", font=("Arial", 9, "bold"))
+    lx_start = -L * SCALE - 20
+    ly_start =  L * SCALE + 50
+    _pen.color("#ffffff")
+    _pen.goto(lx_start, ly_start)
+    _pen.write(get_text("legend", lang) + ":", font=("Arial", 9, "bold"))
     for i, (col, label) in enumerate(legend_items):
-        pen.goto(lx_start, ly_start - 18 * (i + 1))
-        pen.dot(8, col)
-        pen.goto(lx_start + 12, ly_start - 18 * (i + 1) - 4)
-        pen.color("#ffffff")
-        pen.write(label, font=("Arial", 8, "normal"))
+        _pen.goto(lx_start, ly_start - 15 * (i + 1))
+        _pen.dot(8, col)
+        _pen.goto(lx_start + 12, ly_start - 15 * (i + 1) - 4)
+        _pen.color("#ffffff")
+        _pen.write(label, font=("Arial", 8, "normal"))
 
-    # ── tytuł ─────────────────────────────────────────────────────────────
-    pen.color("#ff8800")
-    pen.goto(0, L * SCALE + 18)
-    pen.write(
-        f"Wyprawa: {rover.name}  |  Kroki: {rover.steps}",
-        align="center", font=("Arial", 10, "bold")
-    )
+    # ── Status ────────────────────────────────────────────────────────────
+    _pen.color("#ffffff")
+    _pen.goto(0, L * SCALE + 20)
+    status_txt = f"{bat.name} | Steps: {bat.steps} | Echo: {bat.echolocation:.1f}"
+    _pen.write(status_txt, align="center", font=("Arial", 10, "bold"))
 
-    screen.update()
-    print("\n[Turtle] Wizualizacja gotowa. Zamknij okno Turtle, aby kontynuować.")
-    # turtle.mainloop() zamiast done(), aby uniknąć problemów przy wielokrotnym uruchamianiu
-    # Jednak w niektórych środowiskach done() jest lepsze.
-    # Aby móc zamknąć okno i wrócić do programu, używamy turtle.exitonclick() lub po prostu czekamy.
-    # W większości przypadków turtle.done() wywołuje mainloop.
+    _screen.update()
+
+def close_visualizer():
     try:
-        turtle.done()
-    except turtle.Terminator:
+        turtle.bye()
+    except:
         pass

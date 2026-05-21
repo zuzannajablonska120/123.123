@@ -1,19 +1,19 @@
 import math
 
 
-class Rover:
+class Bat:
     """
-    Reprezentuje łazik marsjański poruszający się po dwuwymiarowej mapie.
-    Przechowuje pozycję, kąt skierowania, poziom paliwa oraz historię trasy.
+    Reprezentuje nietoperza poruszającego się po dwuwymiarowej jaskini.
+    Przechowuje pozycję, kąt skierowania, poziom echolokacji oraz historię trasy.
     """
 
-    def __init__(self, name: str, x: float, y: float, angle: float, fuel: float):
+    def __init__(self, name: str, x: float, y: float, angle: float, echolocation: float):
         self.name = name
         self.x = float(x)
         self.y = float(y)
         self.angle = float(angle) % 360  # kąt w stopniach, 0 = wschód (oś X+)
-        self.fuel = float(fuel)
-        self.max_fuel = float(fuel)
+        self.echolocation = float(echolocation)
+        self.max_echolocation = float(echolocation)
         self.steps = 0
 
         # Historia trasy: lista krotek (x, y)
@@ -23,11 +23,12 @@ class Rover:
         self.events_log: list[str] = []
 
         # Liczniki odwiedzonych elementów świata
-        self.craters_hit = 0
-        self.ice_found = 0
-        self.radiation_entered = 0
-        self.base_camps_visited = 0
-        self.rock_fields_hit = 0
+        self.stalagmites_hit = 0
+        self.stalactites_hit = 0
+        self.stalagnates_hit = 0
+        self.mosquito_swarms_found = 0
+        self.strong_drafts_entered = 0
+        self.safe_crevices_visited = 0
 
     # ------------------------------------------------------------------ ruch
 
@@ -45,24 +46,24 @@ class Rover:
         self.path.append((self.x, self.y))
 
     def turn(self, degrees: float) -> None:
-        """Obraca łazik o podaną liczbę stopni (dodatnia = w lewo, ujemna = w prawo)."""
+        """Obraca nietoperza o podaną liczbę stopni (dodatnia = w lewo, ujemna = w prawo)."""
         self.angle = (self.angle + degrees) % 360
 
     # --------------------------------------------------------------- zasoby
 
-    def consume_fuel(self, amount: float) -> float:
-        """Zużywa paliwo; zwraca faktycznie zużytą ilość."""
+    def consume_echolocation(self, amount: float) -> float:
+        """Zużywa echolokację; zwraca faktycznie zużytą ilość."""
         amount = max(0.0, amount)
-        actual = min(self.fuel, amount)
-        self.fuel = round(self.fuel - actual, 2)
+        actual = min(self.echolocation, amount)
+        self.echolocation = round(self.echolocation - actual, 2)
         return actual
 
-    def refuel(self, amount: float) -> float:
-        """Uzupełnia paliwo do maksimum; zwraca faktycznie dodaną ilość."""
+    def restore_echolocation(self, amount: float) -> float:
+        """Uzupełnia echolokację do maksimum; zwraca faktycznie dodaną ilość."""
         amount = max(0.0, amount)
-        space = self.max_fuel - self.fuel
+        space = self.max_echolocation - self.echolocation
         actual = min(space, amount)
-        self.fuel = round(self.fuel + actual, 2)
+        self.echolocation = round(self.echolocation + actual, 2)
         return actual
 
     # ------------------------------------------------------- dystans do celu
@@ -72,9 +73,16 @@ class Rover:
 
     # ----------------------------------------------------------------- repr
 
-    def status_line(self) -> str:
-        return (
-            f"Pozycja: ({self.x:+.1f}, {self.y:+.1f})  "
-            f"Kąt: {self.angle:.0f}°  "
-            f"Paliwo: {self.fuel:.1f}/{self.max_fuel:.1f}"
-        )
+    def status_line(self, lang="pl") -> str:
+        if lang == "pl":
+            return (
+                f"Pozycja: ({self.x:+.1f}, {self.y:+.1f})  "
+                f"Kąt: {self.angle:.0f}°  "
+                f"Echolokacja: {self.echolocation:.1f}/{self.max_echolocation:.1f}"
+            )
+        else:
+            return (
+                f"Position: ({self.x:+.1f}, {self.y:+.1f})  "
+                f"Angle: {self.angle:.0f}°  "
+                f"Echolocation: {self.echolocation:.1f}/{self.max_echolocation:.1f}"
+            )
