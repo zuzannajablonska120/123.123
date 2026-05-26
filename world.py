@@ -2,7 +2,6 @@ import random
 import math
 
 
-# ─────────────────────────────────────────── typy elementów świata
 
 ELEMENT_STALAGMITE      = "STALAGMITE"
 ELEMENT_STALACTITE      = "STALACTITE"
@@ -48,7 +47,7 @@ class WorldElement:
         self.element_type = element_type
         self.x = x
         self.y = y
-        self.radius = radius  # promień oddziaływania
+        self.radius = radius  
 
     def distance_to(self, rx: float, ry: float) -> float:
         return math.sqrt((self.x - rx) ** 2 + (self.y - ry) ** 2)
@@ -75,14 +74,14 @@ class World:
 
     def __init__(self, limit: float, target_x: float, target_y: float,
                  num_elements: int = 15, seed: int | None = None):
-        self.limit = limit                          # granica świata (jeden bok)
+        self.limit = limit                          
         self.target_x = target_x
         self.target_y = target_y
         self.elements: list[WorldElement] = []
         self._rng = random.Random(seed)
         self._generate_elements(num_elements)
 
-    # -------------------------------------------------- generowanie świata
+   
 
     def _generate_elements(self, count: int) -> None:
         """Losowo rozmieszcza elementy terenu z zachowaniem minimalnego rozkładu typów."""
@@ -90,7 +89,7 @@ class World:
         lo = -self.limit + margin
         hi =  self.limit - margin
 
-        # Zapewniamy przynajmniej kilka elementów każdego typu
+        
         types_pool = (
             [ELEMENT_STALAGMITE]     * 2 +
             [ELEMENT_STALACTITE]     * 2 +
@@ -108,7 +107,7 @@ class World:
             ex = round(self._rng.uniform(lo, hi), 1)
             ey = round(self._rng.uniform(lo, hi), 1)
 
-            # Nie kładziemy elementu zbyt blisko startu (0,0) ani celu
+           
             if math.sqrt(ex**2 + ey**2) < 20:
                 continue
             if math.sqrt((ex - self.target_x)**2 + (ey - self.target_y)**2) < 15:
@@ -119,7 +118,7 @@ class World:
             self.elements.append(WorldElement(etype, ex, ey, radius))
             placed += 1
 
-    # -------------------------------------------------- sprawdzanie granic
+  
 
     def is_within_bounds(self, x: float, y: float) -> bool:
         return -self.limit <= x <= self.limit and -self.limit <= y <= self.limit
@@ -129,7 +128,7 @@ class World:
         cy = max(-self.limit, min(self.limit, y))
         return round(cx, 2), round(cy, 2)
 
-    # ----------------------------------------------- wykrywanie elementów
+  
 
     def get_element_at(self, x: float, y: float) -> WorldElement | None:
         """Zwraca pierwszy element terenu w zasięgu danej pozycji."""
@@ -138,7 +137,7 @@ class World:
                 return el
         return None
 
-    # -------------------------------------------------- cel wyprawy
+  
 
     def target_reached(self, x: float, y: float, tolerance: float = 12.0) -> bool:
         return math.sqrt((x - self.target_x)**2 + (y - self.target_y)**2) <= tolerance
@@ -146,7 +145,7 @@ class World:
     def distance_to_target(self, x: float, y: float) -> float:
         return round(math.sqrt((x - self.target_x)**2 + (y - self.target_y)**2), 2)
 
-    # ----------------------------------------------------------------- repr
+   
 
     def info(self, lang="pl") -> str:
         if lang == "pl":
