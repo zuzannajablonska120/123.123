@@ -3,7 +3,7 @@ import math
 from i18n import get_text
 
 
-# ─────────────────────────────────────── definicje zdarzeń losowych
+
 
 EVENT_WIND_GUST       = "WIND_GUST"
 EVENT_FALLING_ROCKS   = "FALLING_ROCKS"
@@ -18,7 +18,7 @@ EVENT_WEIGHTS = {
     EVENT_INSECT_SWARM:   18,
     EVENT_CAVE_QUAKE:     12,
     EVENT_OTHER_BAT:      10,
-    None:                 25,   # brak zdarzenia
+    None:                 25,   
 }
 
 
@@ -28,7 +28,7 @@ class RandomEvent:
     def __init__(self, event_type: str | None):
         self.event_type = event_type
 
-    # -------------------------------------------- zastosowanie zdarzenia
+   
 
     def apply(self, bat, world, lang="pl") -> list[str]:
         """
@@ -133,7 +133,7 @@ class RandomEvent:
 
         return msgs
 
-    # ----------------------------------------------------------------- repr
+   
 
     def _label(self, lang="pl") -> str:
         labels = {
@@ -149,7 +149,6 @@ class RandomEvent:
         return self.event_type is not None
 
 
-# ─────────────────────────────────── funkcja losująca zdarzenie
 
 def draw_event(step: int) -> RandomEvent:
     """
