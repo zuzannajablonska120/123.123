@@ -13,22 +13,17 @@ from visualizer import init_visualizer, draw_update, close_visualizer
 from i18n       import get_text
 
 
-# ═══════════════════════════════════════════════════════════════
-#  Stałe symulacji
-# ═══════════════════════════════════════════════════════════════
 
-STEP_ECHO_COST   = 5.0     # koszt za każdy krok lotu
-TURN_ECHO_COST   = 2.0     # koszt za obrót
-WAIT_ECHO_COST   = 1.0     # koszt za wiszenie
-MOVE_DISTANCE    = 10.0    # odległość jednego kroku
-EVENT_CHANCE     = 0.30    # 30% szans na zdarzenie losowe
+
+STEP_ECHO_COST   = 5.0     
+TURN_ECHO_COST   = 2.0     
+WAIT_ECHO_COST   = 1.0     
+MOVE_DISTANCE    = 10.0   
+EVENT_CHANCE     = 0.30    
 
 MAX_STEPS_DEFAULT = 60
 
 
-# ═══════════════════════════════════════════════════════════════
-#  Pomocnicze funkcje wejścia
-# ═══════════════════════════════════════════════════════════════
 
 def _input_str(prompt: str, default: str = "") -> str:
     raw = input(prompt).strip()
@@ -77,9 +72,6 @@ def _input_int(prompt: str, default: int,
                 print("  ⚠️  Integer required.")
 
 
-# ═══════════════════════════════════════════════════════════════
-#  Zbieranie parametrów
-# ═══════════════════════════════════════════════════════════════
 
 def collect_parameters(lang="pl") -> dict:
     SEP = "─" * 60
@@ -94,44 +86,44 @@ def collect_parameters(lang="pl") -> dict:
     print(f"  {get_text('enter_default', lang)}")
     print()
 
-    # ── nazwa ─────────────────────────────────────────────────────────────
+ 
     print(SEP)
     print(f"  [1] {get_text('bat_name', lang)}")
     name = _input_str(f"      {get_text('bat_name_prompt', lang)}", "ACE")
 
-    # ── pozycja startowa ──────────────────────────────────────────────────
+ 
     print()
     print(SEP)
     print(f"  [2] {get_text('start_pos', lang)}")
     sx = _input_float("      X [0]: ", 0.0, -80.0, 80.0, lang)
     sy = _input_float("      Y [0]: ", 0.0, -80.0, 80.0, lang)
 
-    # ── kąt startowy ──────────────────────────────────────────────────────
+  
     print()
     print(SEP)
     print(f"  [3] {get_text('start_angle', lang)}")
     angle = _input_float("      (0–359°) [45]: ", 45.0, 0.0, 359.0, lang)
 
-    # ── echolokacja ────────────────────────────────────────────────────────────
+ 
     print()
     print(SEP)
     print(f"  [4] {get_text('echolocation_level', lang)}")
     fuel = _input_float("      [200]: ", 200.0, 20.0, 500.0, lang)
 
-    # ── rozmiar świata ────────────────────────────────────────────────────
+
     print()
     print(SEP)
     print(f"  [5] {get_text('world_size', lang)}")
     world_limit = _input_float("      [100]: ", 100.0, 40.0, 300.0, lang)
 
-    # ── cel ───────────────────────────────────────────────────────
+ 
     print()
     print(SEP)
     print(f"  [6] {get_text('mission_target', lang)}")
     tx = _input_float(f"      X [60]: ", 60.0, -world_limit, world_limit, lang)
     ty = _input_float(f"      Y [60]: ", 60.0, -world_limit, world_limit, lang)
 
-    # ── limit kroków ─────────────────────────────────────────────────────
+   
     print()
     print(SEP)
     print(f"  [7] {get_text('step_limit', lang)}")
@@ -154,9 +146,6 @@ def collect_parameters(lang="pl") -> dict:
     }
 
 
-# ═══════════════════════════════════════════════════════════════
-#  Obsługa efektów elementu świata
-# ═══════════════════════════════════════════════════════════════
 
 def apply_world_element(bat: Bat, world: World,
                         element, pre_x: float, pre_y: float, lang="pl") -> list[str]:
@@ -205,9 +194,6 @@ def apply_world_element(bat: Bat, world: World,
     return msgs
 
 
-# ═══════════════════════════════════════════════════════════════
-#  Wyświetlanie menu akcji i obsługa wyboru
-# ═══════════════════════════════════════════════════════════════
 
 def get_player_action(lang="pl") -> str:
     print()
@@ -226,9 +212,6 @@ def get_player_action(lang="pl") -> str:
         print("  ⚠️  1, 2, 3, 4, 5, Q.")
 
 
-# ═══════════════════════════════════════════════════════════════
-#  Główna pętla symulacji
-# ═══════════════════════════════════════════════════════════════
 
 def run_simulation(params: dict, lang="pl") -> tuple[Bat, World, str, str]:
     SEP  = "═" * 65
@@ -252,7 +235,7 @@ def run_simulation(params: dict, lang="pl") -> tuple[Bat, World, str, str]:
 
     max_steps = params["max_steps"]
 
-    # Inicjalizacja wizualizacji na żywo
+
     init_visualizer(bat, world, lang)
 
     print()
@@ -334,7 +317,7 @@ def run_simulation(params: dict, lang="pl") -> tuple[Bat, World, str, str]:
                 for msg in event.apply(bat, world, lang):
                     print(msg)
 
-        # Update visualization after action
+      
         draw_update(bat, world, lang)
 
         if bat.echolocation <= 0:
@@ -362,12 +345,9 @@ def run_simulation(params: dict, lang="pl") -> tuple[Bat, World, str, str]:
     return bat, world, end_reason, outcome
 
 
-# ═══════════════════════════════════════════════════════════════
-#  Punkt wejścia
-# ═══════════════════════════════════════════════════════════════
 
 def main() -> None:
-    # Language selection
+
     print("\n  Wybierz język / Choose language (pl/en) [pl]: ", end="")
     lang_choice = input().strip().lower()
     lang = "en" if lang_choice == "en" else "pl"
