@@ -15,7 +15,7 @@ def print_report(bat, world, end_reason: str, outcome: str, lang="pl") -> None:
     print(f"  {get_text('bat_name_report', lang)} : {bat.name}")
     print(SEP2)
 
-    # ── parametry początkowe ──────────────────────────────────────────────
+  
     print(f"  {get_text('initial_params', lang)}")
     start = bat.path[0]
     print(f"    {get_text('start_pos', lang)}    : ({start[0]:+.1f}, {start[1]:+.1f})")
@@ -24,7 +24,7 @@ def print_report(bat, world, end_reason: str, outcome: str, lang="pl") -> None:
     print(f"    {get_text('mission_target', lang)}         : ({world.target_x}, {world.target_y})")
     print(SEP2)
 
-    # ── wyniki ────────────────────────────────────────────────────────────
+ 
     print(f"  {get_text('results', lang)}")
     end_pos = bat.path[-1]
     print(f"    {get_text('final_pos', lang)}     : ({end_pos[0]:+.1f}, {end_pos[1]:+.1f})")
@@ -34,7 +34,7 @@ def print_report(bat, world, end_reason: str, outcome: str, lang="pl") -> None:
     print(f"    {get_text('remaining_echo', lang)}    : {bat.echolocation:.1f} / {bat.max_echolocation:.1f}")
     print(SEP2)
 
-    # ── statystyki terenu ─────────────────────────────────────────────────
+ 
     print(f"  {get_text('encountered_elements', lang)}")
     print(f"    {get_text('stalagmite', lang):<20}: {bat.stalagmites_hit}")
     print(f"    {get_text('stalactite', lang):<20}: {bat.stalactites_hit}")
@@ -44,7 +44,7 @@ def print_report(bat, world, end_reason: str, outcome: str, lang="pl") -> None:
     print(f"    {get_text('safe_crevice', lang):<20}: {bat.safe_crevices_visited}")
     print(SEP2)
 
-    # ── dziennik zdarzeń ─────────────────────────────────────────────────
+ 
     print(f"  {get_text('events_log', lang)}")
     if bat.events_log:
         for entry in bat.events_log:
@@ -53,12 +53,12 @@ def print_report(bat, world, end_reason: str, outcome: str, lang="pl") -> None:
         print("    " + ("Brak zdarzeń losowych." if lang == "pl" else "No random events."))
     print(SEP2)
 
-    # ── przyczyna zakończenia i wynik ─────────────────────────────────────
+ 
     print(f"  {get_text('termination', lang)}")
     print(f"    {'Przyczyna' if lang == 'pl' else 'Reason'}: {end_reason}")
     print(f"    {'Wynik' if lang == 'pl' else 'Outcome'}: {outcome}")
 
-    # Obliczenie punktacji
+    
     score = _calculate_score(bat, world, outcome)
     print(f"    {get_text('score', lang)}      : {score}")
     print(SEP)
@@ -78,7 +78,7 @@ def _calculate_score(bat, world, outcome: str) -> int:
     score += max(0, int((world.limit * 2 - dist) * 3))
     score += max(0, 500 - bat.steps * 5)
 
-    # "SUKCES" or "SUCCESS"
+
     if "SUKCES" in outcome.upper() or "SUCCESS" in outcome.upper():
         score += 500
     elif "CZĘŚCIOWY" in outcome.upper() or "PARTIAL" in outcome.upper():
