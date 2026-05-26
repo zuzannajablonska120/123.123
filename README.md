@@ -24,7 +24,7 @@ Na mapie wizualizacji oraz w komunikatach możesz napotkać następujące elemen
 
 ## Wymagania
 - Python 3.11+
-- Moduły standardowe: `math`, `random`, `turtle`, `sys`, `tkinter`.
+- Moduły standardowe: `math`, `random`, `turtle`, `sys`.
 
 ## Uruchomienie
 ```bash
@@ -61,7 +61,7 @@ The following elements can be found on the map and in the simulation:
 
 ## Requirements
 - Python 3.11+
-- Standard modules: `math`, `random`, `turtle`, `sys`, `tkinter`.
+- Standard modules: `math`, `random`, `turtle`, `sys`.
 
 ## Running
 ```bash
