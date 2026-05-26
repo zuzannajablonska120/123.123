@@ -4,7 +4,6 @@ from bat import Bat
 from world import World, WorldElement, ELEMENT_STALAGMITE
 from events import RandomEvent, EVENT_INSECT_SWARM, EVENT_FALLING_ROCKS
 
-# ──────────────────────────────────────────────────────────────── Bat Tests
 
 def test_bat_initialization():
     bat = Bat("ACE", 0, 0, 45, 200)
@@ -16,12 +15,12 @@ def test_bat_initialization():
     assert len(bat.path) == 1
 
 def test_bat_movement_math():
-    bat = Bat("ACE", 0, 0, 0, 200) # Facing East
+    bat = Bat("ACE", 0, 0, 0, 200) 
     nx, ny = bat.compute_next_position(10)
     assert nx == 10.0
     assert ny == 0.0
 
-    bat.turn(90) # Now North
+    bat.turn(90) 
     nx, ny = bat.compute_next_position(10)
     assert nx == 0.0
     assert ny == 10.0
@@ -40,7 +39,7 @@ def test_echolocation_consumption():
     assert used == 50.0
     assert bat.echolocation == 150.0
 
-    used = bat.consume_echolocation(200) # More than available
+    used = bat.consume_echolocation(200) 
     assert used == 150.0
     assert bat.echolocation == 0.0
 
@@ -51,11 +50,9 @@ def test_echolocation_restoration():
     assert restored == 50.0
     assert bat.echolocation == 150.0
 
-    restored = bat.restore_echolocation(100) # Over max
+    restored = bat.restore_echolocation(100) 
     assert restored == 50.0
     assert bat.echolocation == 200.0
-
-# ────────────────────────────────────────────────────────────── World Tests
 
 def test_world_bounds():
     world = World(limit=100, target_x=60, target_y=60)
@@ -72,7 +69,7 @@ def test_world_clamping():
 def test_target_reached():
     world = World(limit=100, target_x=60, target_y=60)
     assert world.target_reached(60, 60) is True
-    assert world.target_reached(65, 65) is True # within tolerance
+    assert world.target_reached(65, 65) is True 
     assert world.target_reached(0, 0) is False
 
 def test_element_detection():
@@ -84,7 +81,6 @@ def test_element_detection():
     assert world.get_element_at(12, 12) == el
     assert world.get_element_at(20, 20) is None
 
-# ───────────────────────────────────────────────────────────── Event Tests
 
 def test_event_insect_swarm():
     bat = Bat("ACE", 0, 0, 0, 200)
