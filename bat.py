@@ -11,18 +11,18 @@ class Bat:
         self.name = name
         self.x = float(x)
         self.y = float(y)
-        self.angle = float(angle) % 360  # kąt w stopniach, 0 = wschód (oś X+)
+        self.angle = float(angle) % 360  
         self.echolocation = float(echolocation)
         self.max_echolocation = float(echolocation)
         self.steps = 0
 
-        # Historia trasy: lista krotek (x, y)
+        
         self.path: list[tuple[float, float]] = [(self.x, self.y)]
 
-        # Dziennik zdarzeń do raportu końcowego
+        
         self.events_log: list[str] = []
 
-        # Liczniki odwiedzonych elementów świata
+        
         self.stalagmites_hit = 0
         self.stalactites_hit = 0
         self.stalagnates_hit = 0
@@ -30,7 +30,7 @@ class Bat:
         self.strong_drafts_entered = 0
         self.safe_crevices_visited = 0
 
-    # ------------------------------------------------------------------ ruch
+   
 
     def compute_next_position(self, distance: float = 10.0) -> tuple[float, float]:
         """Oblicza nową pozycję przy ruchu do przodu o zadaną odległość."""
@@ -49,7 +49,7 @@ class Bat:
         """Obraca nietoperza o podaną liczbę stopni (dodatnia = w lewo, ujemna = w prawo)."""
         self.angle = (self.angle + degrees) % 360
 
-    # --------------------------------------------------------------- zasoby
+   
 
     def consume_echolocation(self, amount: float) -> float:
         """Zużywa echolokację; zwraca faktycznie zużytą ilość."""
@@ -66,12 +66,12 @@ class Bat:
         self.echolocation = round(self.echolocation + actual, 2)
         return actual
 
-    # ------------------------------------------------------- dystans do celu
+    
 
     def distance_to(self, tx: float, ty: float) -> float:
         return round(math.sqrt((self.x - tx) ** 2 + (self.y - ty) ** 2), 2)
 
-    # ----------------------------------------------------------------- repr
+    
 
     def status_line(self, lang="pl") -> str:
         if lang == "pl":
