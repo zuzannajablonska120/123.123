@@ -1,7 +1,7 @@
 import turtle
 from i18n import get_text
 
-# Global variables for persistent turtle window
+
 _screen = None
 _pen = None
 
@@ -10,7 +10,7 @@ def init_visualizer(bat, world, lang="pl"):
     try:
         _screen = turtle.Screen()
         _screen.title(get_text("title", lang))
-        _screen.bgcolor("#0a0a0a")  # Deep cave black
+        _screen.bgcolor("#0a0a0a")  
         _screen.tracer(0)
 
         _pen = turtle.Turtle()
@@ -32,13 +32,13 @@ def draw_update(bat, world, lang="pl"):
     _pen.penup()
 
     L = world.limit
-    # Scaling to fit the screen
+
     SCALE = min(350 / L, 3.5) if L > 0 else 1.0
 
     def wp(x, y):
         return x * SCALE, y * SCALE
 
-    # ── Cave boundaries ─────────────────────────────────────────────────────
+ 
     _pen.color("#333333") # Dark grey walls
     _pen.penup()
     sx, sy = wp(-L, -L)
@@ -48,7 +48,7 @@ def draw_update(bat, world, lang="pl"):
         _pen.goto(*wp(*corner))
     _pen.penup()
 
-    # ── Elements ────────────────────────────────────────────────────────────
+ 
     colors_map = {
         "STALAGMITE":      ("#666666", 6),
         "STALACTITE":      ("#888888", 6),
@@ -62,7 +62,7 @@ def draw_update(bat, world, lang="pl"):
         _pen.goto(*wp(el.x, el.y))
         _pen.dot(sz, col)
 
-    # ── Exit ────────────────────────────────────────────────────────────────
+
     _pen.color("#ffff00")
     gx, gy = wp(world.target_x, world.target_y)
     _pen.goto(gx, gy)
@@ -70,7 +70,7 @@ def draw_update(bat, world, lang="pl"):
     _pen.goto(gx + 6, gy + 6)
     _pen.write(get_text("goal", lang), font=("Arial", 9, "bold"))
 
-    # ── Bat path ──────────────────────────────────────────────────────────
+
     if bat.path:
         _pen.color("#aaaaaa")
         _pen.penup()
@@ -81,22 +81,22 @@ def draw_update(bat, world, lang="pl"):
             _pen.goto(*wp(px, py))
         _pen.penup()
 
-    # ── Start point ───────────────────────────────────────────────────────
+
     sx0, sy0 = wp(*bat.path[0])
     _pen.goto(sx0, sy0)
     _pen.dot(10, "#0000ff")
     _pen.color("#0000ff")
     _pen.write(get_text("start", lang), font=("Arial", 8, "bold"))
 
-    # ── Current position (Bat) ────────────────────────────────────────────
+   
     ex, ey = wp(bat.x, bat.y)
     _pen.goto(ex, ey)
-    # Draw a simple bat-like shape or just a dot
+    
     _pen.dot(12, "#ffffff")
     _pen.color("#ffffff")
     _pen.write(bat.name, font=("Arial", 8, "italic"))
 
-    # ── Legend ───────────────────────────────────────────────────────────
+ 
     legend_items = [
         ("#666666", get_text("stalagmite", lang)),
         ("#888888", get_text("stalactite", lang)),
@@ -119,7 +119,7 @@ def draw_update(bat, world, lang="pl"):
         _pen.color("#ffffff")
         _pen.write(label, font=("Arial", 8, "normal"))
 
-    # ── Status ────────────────────────────────────────────────────────────
+
     _pen.color("#ffffff")
     _pen.goto(0, L * SCALE + 20)
     status_txt = f"{bat.name} | Steps: {bat.steps} | Echo: {bat.echolocation:.1f}"
