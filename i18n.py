@@ -1,4 +1,4 @@
-# Translation dictionary
+
 TRANSLATIONS = {
     "pl": {
         "title": "SYMULATOR NIETOPERZA W JASKINI v1.0",
